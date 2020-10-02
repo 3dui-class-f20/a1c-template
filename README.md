@@ -14,6 +14,8 @@ For this assignment, you will convert your Assignment 1(b) solution to use the E
 
 The learning objective of this assignment is to more fully understand how Playcanvas works and how implementing a project using just code can have a very similar structure to using Unity or Playcanvas.  You will also see how there are opportunities to structure your code that cross between the Playcanvas Editor (and Unity) "attach code as scripts to nodes in the graph" and "merge the code into the main line of the project."
 
+I have [created a video and put it on Perusall](https://app.perusall.com/courses/3d-user-interfaces/_/dashboard/documents/document-eyqmc8xzRFzNcCnQP) walking through this code and showing you how I figured out the various parts while replicating the Playcanvas XR Sample in the engine.
+
 ## Due: Friday October 9th, 11:59am (noon)
 
 ## Name and GT user-id
