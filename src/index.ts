@@ -2,7 +2,15 @@
 
 import { SingleEntryPlugin } from "webpack";
 
-(function () {
+declare function wasmSupported():boolean;
+declare function loadWasmModuleAsync(name: string, path1: string, path2: string, cb: ()=>void):void;
+if (wasmSupported()) {
+    loadWasmModuleAsync('Ammo', '/assets/ammo/ammo.wasm.js', '../assets/ammo/ammo.wasm.wasm', play);
+} else {
+    loadWasmModuleAsync('Ammo', '/assets/ammo/ammo.js', '', play);
+}
+
+function play() {
     // we nest this inside a function (that we run immediately) so we can short circuit it 
     // by doing a "return" if there is an error
 
@@ -74,6 +82,9 @@ import { SingleEntryPlugin } from "webpack";
         app.resizeCanvas(canvas.width, canvas.height);
     });
 
+    setupSplash(app);
+
+    
     ///////////////////
     // ASSETS!
     // There is an asset loader in the AssetRegistry (app.assets) but it doesn't appear to 
@@ -146,7 +157,9 @@ import { SingleEntryPlugin } from "webpack";
     // rest of the creation process in a function so that it can get called only 
     // after the assets have loaded
     var buildScene = function () {
-
+        /// READY TO GO!
+        app.start();
+        
         //////////////////// 
         // NODES!
 
@@ -508,8 +521,7 @@ import { SingleEntryPlugin } from "webpack";
         // back the lights before starting
         app.lightmapper.bake(null, pc.BAKE_COLOR);
 
-        /// READY TO GO!
-        app.start();
+
 
         //// not used here, but many of the engine examples add an update event on 
         //// "app", which is essentially equivalent to the requestAnimationFrame update
@@ -519,115 +531,118 @@ import { SingleEntryPlugin } from "webpack";
         //    // code for your main loop
         // });
     }
-})();
+};
+    pc.script.createLoadingScreen(function (app) {
+        var showSplash = function () {
+            // splash wrapper
+            var wrapper = document.createElement('div');
+            wrapper.id = 'application-splash-wrapper';
+            document.body.appendChild(wrapper);
 
-pc.script.createLoadingScreen(function (app) {
-    var showSplash = function () {
-        // splash wrapper
-        var wrapper = document.createElement('div');
-        wrapper.id = 'application-splash-wrapper';
-        document.body.appendChild(wrapper);
+            // splash
+            var splash = document.createElement('div');
+            splash.id = 'application-splash';
+            wrapper.appendChild(splash);
+            splash.style.display = 'none';
 
-        // splash
-        var splash = document.createElement('div');
-        splash.id = 'application-splash';
-        wrapper.appendChild(splash);
-        splash.style.display = 'none';
+            var logo = document.createElement('img');
+            logo.src = 'a1c-splash.png';
+            splash.appendChild(logo);
+            logo.onload = function () {
+                splash.style.display = 'block';
+            };
 
-        var logo = document.createElement('img');
-        logo.src = 'a1c-splash.png';
-        splash.appendChild(logo);
-        logo.onload = function () {
-            splash.style.display = 'block';
+            var container = document.createElement('div');
+            container.id = 'progress-bar-container';
+            splash.appendChild(container);
+
+            var bar = document.createElement('div');
+            bar.id = 'progress-bar';
+            container.appendChild(bar);
+
         };
 
-        var container = document.createElement('div');
-        container.id = 'progress-bar-container';
-        splash.appendChild(container);
+        var createCss = function () {
+            var css = [
+                'body {',
+                '    background-color: #283538;',
+                '}',
 
-        var bar = document.createElement('div');
-        bar.id = 'progress-bar';
-        container.appendChild(bar);
+                '#application-splash-wrapper {',
+                '    position: absolute;',
+                '    top: 0;',
+                '    left: 0;',
+                '    height: 100%;',
+                '    width: 100%;',
+                '    background-color: #283538;',
+                '}',
 
-    };
+                '#application-splash {',
+                '    position: absolute;',
+                '    top: calc(50% - 28px);',
+                '    width: 264px;',
+                '    left: calc(50% - 132px);',
+                '}',
 
-    var hideSplash = function () {
-        var splash = document.getElementById('application-splash-wrapper');
-        if (splash) {
-            splash!.parentElement!.removeChild(splash);
-        }
-    };
+                '#application-splash img {',
+                '    width: 100%;',
+                '}',
 
-    var setProgress = function (value: number) {
-        var bar = document.getElementById('progress-bar');
-        if (bar) {
-            value = Math.min(1, Math.max(0, value));
-            bar.style.width = value * 100 + '%';
-        }
-    };
+                '#progress-bar-container {',
+                '    margin: 20px auto 0 auto;',
+                '    height: 2px;',
+                '    width: 100%;',
+                '    background-color: #1d292c;',
+                '}',
 
-    var createCss = function () {
-        var css = [
-            'body {',
-            '    background-color: #283538;',
-            '}',
+                '#progress-bar {',
+                '    width: 0%;',
+                '    height: 100%;',
+                '    background-color: #f60;',
+                '}',
+                '@media (max-width: 480px) {',
+                '    #application-splash {',
+                '        width: 170px;',
+                '        left: calc(50% - 85px);',
+                '    }',
+                '}'
 
-            '#application-splash-wrapper {',
-            '    position: absolute;',
-            '    top: 0;',
-            '    left: 0;',
-            '    height: 100%;',
-            '    width: 100%;',
-            '    background-color: #283538;',
-            '}',
+            ].join('\n');
 
-            '#application-splash {',
-            '    position: absolute;',
-            '    top: calc(50% - 28px);',
-            '    width: 264px;',
-            '    left: calc(50% - 132px);',
-            '}',
-
-            '#application-splash img {',
-            '    width: 100%;',
-            '}',
-
-            '#progress-bar-container {',
-            '    margin: 20px auto 0 auto;',
-            '    height: 2px;',
-            '    width: 100%;',
-            '    background-color: #1d292c;',
-            '}',
-
-            '#progress-bar {',
-            '    width: 0%;',
-            '    height: 100%;',
-            '    background-color: #f60;',
-            '}',
-            '@media (max-width: 480px) {',
-            '    #application-splash {',
-            '        width: 170px;',
-            '        left: calc(50% - 85px);',
-            '    }',
-            '}'
-
-        ].join('\n');
-
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.appendChild(document.createTextNode(css));
-    
-        document.head.appendChild(style);
-    };
+            var style = document.createElement('style');
+            style.type = 'text/css';
+            style.appendChild(document.createTextNode(css));
+        
+            document.head.appendChild(style);
+        };
 
 
-    createCss();
+        createCss();
 
-    showSplash();
+        showSplash();
 
-    app.on('preload:end', function () {
-        app.off('preload:progress');
     });
-    app.on('preload:progress', setProgress);
-    app.on('start', hideSplash);
-});
+
+    function setupSplash(app: pc.Application) {
+        var hideSplash = function () {
+            var splash = document.getElementById('application-splash-wrapper');
+            if (splash) {
+                splash!.parentElement!.removeChild(splash);
+            }
+        };
+    
+        var setProgress = function (value: number) {
+            var bar = document.getElementById('progress-bar');
+            if (bar) {
+                value = Math.min(1, Math.max(0, value));
+                bar.style.width = value * 100 + '%';
+            }
+        };
+    
+        app.on('preload:end', function () {
+            app.off('preload:progress');
+        });
+        app.on('preload:progress', setProgress);
+        app.on('start', hideSplash);
+    }
+    
